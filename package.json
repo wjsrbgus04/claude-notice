@@ -1,0 +1,25 @@
+{
+  "name": "claude-notice",
+  "version": "0.1.0",
+  "description": "Claude Code 작업 완료 Telegram 알림 + 현황 조회 + 원격 추가 질문 봇",
+  "type": "module",
+  "bin": {
+    "claude-notice": "bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "telegram",
+    "notification",
+    "hooks"
+  ],
+  "license": "MIT"
+}
