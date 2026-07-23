@@ -14,6 +14,14 @@
   "engines": {
     "node": ">=18"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wjsrbgus04/claude-notice.git"
+  },
+  "homepage": "https://github.com/wjsrbgus04/claude-notice#readme",
+  "bugs": {
+    "url": "https://github.com/wjsrbgus04/claude-notice/issues"
+  },
   "keywords": [
     "claude-code",
     "claude",
