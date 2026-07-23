@@ -8,8 +8,6 @@ Works over any network (LTE included) — your Mac only makes outbound HTTPS
 requests (long polling), so no port forwarding, static IP, or extra server is
 needed.
 
-![Demo: a task-finished alert arrives, /sessions lists recent sessions, and replying to the alert asks Claude a follow-up question](https://raw.githubusercontent.com/wjsrbgus04/claude-notice/master/docs/demo.gif)
-
 *A task-finished alert arrives → `/sessions` lists recent sessions → replying
 to the alert sends a follow-up question to that session, and the answer comes
 back.*
