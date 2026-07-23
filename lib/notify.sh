@@ -24,15 +24,27 @@ if [ "$EVENT" != "start" ] && [ -f "$CONFIG" ]; then
   BOT_TOKEN=$(jq -r '.botToken // empty' "$CONFIG")
   CHAT_ID=$(jq -r '.chatId // empty' "$CONFIG")
 
+  # 메시지 언어 (config.lang: "en" | "ko", 미설정 시 한국어)
+  MSG_LANG=$(jq -r '.lang // "ko"' "$CONFIG" 2>/dev/null)
+  if [ "$MSG_LANG" = "en" ]; then
+    ATTENTION_PREFIX="⏸ Needs attention"
+    DONE_PREFIX="✅ Task finished"
+    DEFAULT_DETAIL="Waiting for your input."
+  else
+    ATTENTION_PREFIX="⏸ 확인 필요"
+    DONE_PREFIX="✅ 작업 완료"
+    DEFAULT_DETAIL="입력을 기다리고 있습니다."
+  fi
+
   if [ -n "$BOT_TOKEN" ] && [ -n "$CHAT_ID" ]; then
     case "$EVENT" in
       attention)
-        DETAIL=$(echo "$INPUT" | jq -r '.message // "입력을 기다리고 있습니다."' 2>/dev/null)
-        TEXT="⏸ 확인 필요: ${PROJECT}
+        DETAIL=$(echo "$INPUT" | jq -r ".message // \"${DEFAULT_DETAIL}\"" 2>/dev/null)
+        TEXT="${ATTENTION_PREFIX}: ${PROJECT}
 ${DETAIL}"
         ;;
       *)
-        TEXT="✅ 작업 완료: ${PROJECT}"
+        TEXT="${DONE_PREFIX}: ${PROJECT}"
         ;;
     esac
 
