@@ -20,11 +20,15 @@ npx claude-notice setup
 
 The setup wizard walks you through everything:
 
-1. **Enter your bot token** — create one with Telegram's `@BotFather` (`/newbot`)
-2. **chat_id auto-detection** — just send any message to your bot
-3. Registers Claude Code hooks (`~/.claude/settings.json`)
-4. Registers the daemon (macOS launchd — starts on boot, restarts on crash)
-5. Sends a test notification
+1. **Pick your language** — English or Korean, for notifications and bot replies
+2. **Enter your bot token** — create one with Telegram's `@BotFather` (`/newbot`)
+3. **chat_id auto-detection** — just send any message to your bot
+4. Registers Claude Code hooks (`~/.claude/settings.json`)
+5. Registers the daemon (macOS launchd — starts on boot, restarts on crash)
+6. Sends a test notification
+
+To change the language later, re-run `npx claude-notice setup` — it reuses your
+existing bot config and only asks again for the language.
 
 > Requirements: Node.js ≥ 18, `jq`, `curl`, and the Claude Code CLI.
 > Automatic daemon registration is macOS-only. On other platforms, run
