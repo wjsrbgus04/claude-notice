@@ -50,6 +50,28 @@ Follow-up questions run headlessly via `claude -p --resume --fork-session`.
 They run in the default permission mode: reading and answering work normally,
 while actions that require approval (file edits, etc.) may fail.
 
+## How is this different from Claude Code Channels?
+
+[Claude Code Channels](https://code.claude.com/docs/en/channels) (research
+preview) bridges chats like Telegram into a **live, currently-open** Claude Code
+session — great for remote-controlling a session while it runs, including
+approving permission prompts from your phone.
+
+claude-notice solves the opposite problem: **finding out what happened while
+you were away**, with nothing but a lightweight daemon running.
+
+| | claude-notice | Channels |
+|---|---|---|
+| Task-finished push alerts (Stop hook) | ✅ core feature | ❌ ask manually |
+| Works with no Claude Code session open | ✅ lightweight daemon | ❌ session must stay running |
+| Follow-up questions to **finished** sessions | ✅ `--resume --fork-session` | ❌ live session only |
+| Session status across projects (`/status`) | ✅ | ❌ |
+| Approve permission prompts remotely | ❌ alert only | ✅ |
+| Requirements | Node ≥ 18 | Bun runtime + persistent session |
+
+They compose well: use claude-notice to get notified and ask post-hoc
+questions, and Channels when you want to drive a live session remotely.
+
 ## CLI commands
 
 ```bash
