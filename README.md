@@ -1,77 +1,93 @@
 # claude-notice
 
-Claude Code 작업이 끝나면 **Telegram으로 푸시 알림**을 보내고, 봇 채팅으로
-**작업 현황 조회**와 **끝난 세션에 대한 추가 질문**까지 할 수 있는 도구입니다.
+Get a **Telegram push notification** when your Claude Code task finishes, check
+**session status**, and **ask follow-up questions** to finished sessions — all
+from your phone, from anywhere.
 
-외부 네트워크(LTE)에서도 동작합니다 — 맥에서는 아웃바운드 HTTPS(롱폴링)만
-사용하므로 포트포워딩·고정 IP·별도 서버가 필요 없습니다.
+Works over any network (LTE included) — your Mac only makes outbound HTTPS
+requests (long polling), so no port forwarding, static IP, or extra server is
+needed.
 
-## 설치
+## Install
 
 ```bash
 npx claude-notice setup
 ```
 
-설치 마법사가 순서대로 안내합니다:
+The setup wizard walks you through everything:
 
-1. **봇 토큰 입력** — Telegram `@BotFather`에서 `/newbot`으로 발급
-2. **chat_id 자동 감지** — 봇에게 아무 메시지나 보내면 됨
-3. Claude Code 훅 등록 (`~/.claude/settings.json`)
-4. 데몬 등록 (macOS launchd — 부팅 시 자동 시작, 죽으면 자동 재시작)
-5. 테스트 알림 발송
+1. **Enter your bot token** — create one with Telegram's `@BotFather` (`/newbot`)
+2. **chat_id auto-detection** — just send any message to your bot
+3. Registers Claude Code hooks (`~/.claude/settings.json`)
+4. Registers the daemon (macOS launchd — starts on boot, restarts on crash)
+5. Sends a test notification
 
-> 요구사항: Node.js ≥ 18, `jq`, `curl`, Claude Code CLI.
-> 자동 상주 실행은 macOS 지원. 다른 OS는 `claude-notice start`로 직접 실행하거나
-> systemd 등에 등록하세요.
+> Requirements: Node.js ≥ 18, `jq`, `curl`, and the Claude Code CLI.
+> Automatic daemon registration is macOS-only. On other platforms, run
+> `claude-notice start` directly or register it with systemd or your own
+> service manager.
 
-## 기능
+## Features
 
 | | |
 |---|---|
-| ✅ 작업 완료 알림 | Claude Code 턴이 끝나면 프로젝트명과 함께 푸시 |
-| ⏸ 확인 필요 알림 | 권한 승인 등 입력 대기 시 푸시 |
-| `/status` | 최근 세션 현황 (진행 중/완료/확인 필요) |
-| `/sessions` | 최근 세션 기록 5개 |
-| `/ask <질문>` | 가장 최근 세션에 이어서 질문 |
-| **알림에 답장** | 해당 세션에 이어서 질문하고 답변 수신 |
+| ✅ Task-finished alerts | Push notification with the project name when a Claude Code turn ends |
+| ⏸ Attention alerts | Push notification when Claude Code is waiting for permission or input |
+| `/status` | Recent session status (running / done / needs attention) |
+| `/sessions` | Five most recent sessions |
+| `/ask <question>` | Ask a follow-up question to the most recent session |
+| **Reply to an alert** | Continues that exact session and sends the answer back |
 
-추가 질문은 `claude -p --resume --fork-session`(헤드리스)으로 실행됩니다.
-기본 권한 모드라서 읽기·질문 응답은 정상 동작하고, 파일 수정 등 승인이 필요한
-작업은 실패할 수 있습니다.
+Follow-up questions run headlessly via `claude -p --resume --fork-session`.
+They run in the default permission mode: reading and answering work normally,
+while actions that require approval (file edits, etc.) may fail.
 
-## CLI 명령
+## CLI commands
 
 ```bash
-claude-notice setup      # 설치 마법사 (재실행 시 기존 설정 재사용)
-claude-notice status     # 데몬 상태·최근 로그
-claude-notice restart    # 데몬 재시작 (패키지 업데이트 후 setup → restart)
-claude-notice logs       # 로그 실시간 보기
-claude-notice stop       # 데몬 중지
-claude-notice start      # 포그라운드 실행 (macOS 외 환경용)
-claude-notice uninstall  # 훅·데몬 제거 (설정은 유지)
+claude-notice setup      # setup wizard (re-running reuses existing config)
+claude-notice status     # daemon status and recent logs
+claude-notice restart    # restart the daemon (after updates)
+claude-notice logs       # follow logs
+claude-notice stop       # stop the daemon
+claude-notice start      # run in the foreground (non-macOS)
+claude-notice uninstall  # remove hooks and daemon (config is kept)
 ```
 
-## 파일 위치
+## Updating
 
-모든 런타임 파일은 `~/.claude/claude-notice/`에 설치됩니다:
-`config.json`(봇 토큰, chmod 600) · `state.json`(세션 매핑) · `bot.mjs`(데몬) ·
-`notify.sh`(훅) · `daemon.log`
+```bash
+npx claude-notice@latest setup   # reinstalls the latest files, reuses your config
+claude-notice restart
+```
 
-## 보안
+## File locations
 
-- 봇은 setup 때 감지한 **chat_id 한 명**의 메시지에만 응답합니다 (그 외 전부 무시)
-- 봇 토큰이 유출되면 알림 열람이 가능합니다 — BotFather `/revoke`로 재발급 후
-  `setup`을 다시 실행하세요
+All runtime files live in `~/.claude/claude-notice/`:
+`config.json` (bot token, chmod 600) · `state.json` (session mappings) ·
+`bot.mjs` (daemon) · `notify.sh` (hook script) · `daemon.log`
 
-## 동작 원리
+## Security
+
+- The bot only responds to the **single chat_id** detected during setup;
+  every other message is ignored
+- If your bot token leaks, your notifications can be read — revoke it with
+  BotFather's `/revoke` and run `setup` again
+
+## How it works
 
 ```
-Claude Code 훅 (Stop/Notification/UserPromptSubmit)
-   └→ notify.sh ─→ Telegram sendMessage (알림 + 메시지↔세션 매핑 기록)
+Claude Code hooks (Stop / Notification / UserPromptSubmit)
+   └→ notify.sh ─→ Telegram sendMessage (alert + message↔session mapping)
 
-bot.mjs 데몬 (launchd 상주, getUpdates 롱폴링)
-   └→ 조회 명령 처리, 알림 답장 시 claude -p --resume --fork-session 실행
+bot.mjs daemon (resident via launchd, getUpdates long polling)
+   └→ handles query commands; replies to alerts run
+      claude -p --resume --fork-session and send the answer back
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
