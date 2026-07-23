@@ -1,6 +1,6 @@
 {
   "name": "claude-notice",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Telegram notifications for Claude Code — task-finished alerts, session status, and remote follow-up questions",
   "type": "module",
   "bin": {
